@@ -22,7 +22,7 @@ trusted_sources = [
     "ndtv.com", "apnews.com"
 ]
 
-# 🔥 Hybrid extraction
+
 def extract_from_url(url):
     try:
         article = Article(url)
@@ -142,3 +142,6 @@ def home():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+#This is final code for features
