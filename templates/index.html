@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>FakeLens Times</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Libre+Baskerville&family=Inter&display=swap" rel="stylesheet">
+
+<style>
+
+html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* 🔥 BACKGROUND */
+body::before {
+    content: "";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 100vh;
+    height: 100vw;
+
+    background: url('{{ url_for("static", filename="bg.png") }}') no-repeat center;
+    background-size: cover;
+
+    transform: translate(-50%, -50%) rotate(90deg) scale(1.1);
+
+    opacity: 0.6;
+    z-index: -1;
+}
+
+/* PAPER */
+.overlay {
+    background: rgba(245,241,233,0.85);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* HEADER */
+.masthead {
+    text-align: center;
+    border-bottom: 3px solid black;
+    padding-bottom: 10px;
+}
+
+.masthead h1 {
+    font-family: 'Playfair Display';
+    font-size: 48px;
+    margin: 0;
+}
+
+/* LAYOUT */
+.main {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* LEFT */
+.left {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.headline {
+    border-bottom: 1px solid black;
+}
+
+.detector {
+    border: 2px solid black;
+    padding: 15px;
+    background: white;
+}
+
+textarea, input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px;
+    width: 100%;
+    background: black;
+    color: white;
+    border: none;
+}
+
+/* RESULT */
+.result {
+    margin-top: 10px;
+}
+
+.fake { color: red; font-weight: bold; }
+.real { color: green; font-weight: bold; }
+
+/* RIGHT PANEL */
+.right {
+    border-left: 1px solid black;
+    padding-left: 15px;
+}
+
+/* RISK BAR */
+.risk-bar {
+    height: 20px;
+    background: #ddd;
+    margin-top: 5px;
+}
+
+.risk-fill {
+    height: 20px;
+}
+
+/* RELATED */
+.related {
+    margin-top: 30px;
+    border-top: 2px solid black;
+    padding-top: 10px;
+}
+.chart-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="overlay">
+
+    <!-- HEADER -->
+    <div class="masthead">
+        <h1>FAKE NEWS DETECTION</h1>
+        <p>“Truth Above All”</p>
+    </div>
+
+    <div class="main">
+
+        <!-- LEFT SIDE -->
+        <div class="left">
+
+            <div class="headline">
+                {% if prediction %}
+<h2>
+    {% if 'Fake' in prediction %}
+    🚨 AI Flags Potential Fake News
+    {% else %}
+    📰 Verified News Detected by AI
+    {% endif %}
+</h2>
+
+<p>
+    {% if 'Fake' in prediction %}
+    This content shows patterns of misinformation or exaggeration.
+    {% else %}
+    This article aligns with credible sources and verified information.
+    {% endif %}
+</p>
+{% endif %}
+            </div>
+
+            <div class="detector">
+
+                <h3>🔍 Verify This News</h3>
+
+                <form method="POST">
+
+                    <input type="text" name="url" placeholder="Paste news URL">
+
+                    <textarea name="news" placeholder="Paste headline or article..."></textarea>
+
+                    <button type="submit">Analyze</button>
+
+                </form>
+
+                {% if error %}
+                <p style="color:red;">{{ error }}</p>
+                {% endif %}
+
+                {% if prediction %}
+                <div class="result">
+
+                    <p class="{% if 'Fake' in prediction %}fake{% else %}real{% endif %}">
+                        {{ prediction }}
+                    </p>
+
+                    <p>Confidence: {{ confidence }}%</p>
+
+                    <p>
+                        Source:
+                        <span class="{% if source_color == 'green' %}real{% else %}fake{% endif %}">
+                            {{ source_status }}
+                        </span>
+                    </p>
+
+                    <p>
+                        Live Check:
+                        {% if is_real %}
+                        ✔ Found in News
+                        {% else %}
+                        ✖ Not Found
+                        {% endif %}
+                    </p>
+
+                </div>
+                {% endif %}
+
+            </div>
+
+            <!-- RELATED -->
+            {% if articles %}
+            <div class="related">
+                <h3>📰 Related Coverage</h3>
+                {% for article in articles %}
+                    <p>• {{ article.title }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- HISTORY -->
+            <div class="related">
+                <h3>Recent Checks</h3>
+                {% for item in history %}
+                    <p>• {{ item.text }} → {{ item.result }}</p>
+                {% endfor %}
+            </div>
+
+        </div>
+
+        <!-- RIGHT SIDE (🔥 NEW UNIQUE FEATURE) -->
+       <div class="right">
+
+    <h3>📊 Fake Risk Meter</h3>
+
+    {% if confidence %}
+
+    <div class="chart-container">
+        <svg width="160" height="160">
+            
+            <!-- Background circle -->
+            <circle cx="80" cy="80" r="60"
+                stroke="#ddd" stroke-width="12" fill="none" />
+
+            <!-- Progress circle -->
+            <circle cx="80" cy="80" r="60"
+                stroke="{% if 'Fake' in prediction %}red{% else %}green{% endif %}"
+                stroke-width="12"
+                fill="none"
+                stroke-dasharray="377"
+                stroke-dashoffset="{{ 377 - (confidence * 3.77) }}"
+                stroke-linecap="round"
+                transform="rotate(-90 80 80)" />
+
+            <!-- Center text -->
+            <text x="50%" y="50%" text-anchor="middle" dy=".3em"
+                font-size="18" font-weight="bold">
+                {{ confidence }}%
+            </text>
+
+        </svg>
+    </div>
+
+    {% endif %}
+
+    <p style="text-align:center; margin-top:10px;">
+        {% if prediction and 'Fake' in prediction %}
+        ⚠ High Risk
+        {% elif prediction %}
+        ✔ Reliable
+        {% endif %}
+    </p>
+
+    <hr>
+
+    <h3>🧠 Fact Check Summary</h3>
+    <p>
+        {% if prediction and 'Fake' in prediction %}
+        This content contains exaggerated or misleading language patterns.
+        {% elif prediction %}
+        This content aligns with credible news sources and factual tone.
+        {% endif %}
+    </p>
+
+</div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
