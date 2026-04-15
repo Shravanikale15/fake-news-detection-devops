@@ -1,3 +1,6 @@
+# Fake News Detection System
+
+UI updated by Sakshi
 # 📰 Fake News Detection System (TruthLens AI)
 
 ---
