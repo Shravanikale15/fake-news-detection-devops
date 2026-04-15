@@ -210,3 +210,10 @@ docker run -p 5000:5000 fake-news-app
 Open:
 http://127.0.0.1:5000
 ###
+
+## 🚀 Live Deployment
+
+The application is deployed on Render cloud platform:
+
+https://fake-news-detection-devops.onrender.com/
+###
