@@ -199,3 +199,14 @@ This project demonstrates the integration of **Artificial Intelligence and DevOp
 
 ---
 
+## 🐳 Docker Setup
+
+### Build Docker Image
+docker build -t fake-news-app .
+
+### Run Container
+docker run -p 5000:5000 fake-news-app
+
+Open:
+http://127.0.0.1:5000
+###
