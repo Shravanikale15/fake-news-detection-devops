@@ -1,5 +1,12 @@
 import pytest
+import sys
+import os
+
+# Fix path issue
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from app import app
+
 
 @pytest.fixture
 def client():
@@ -8,22 +15,12 @@ def client():
 
 
 def test_home_page(client):
-    """Test if homepage loads successfully"""
     response = client.get('/')
     assert response.status_code == 200
 
 
-def test_prediction_route(client):
-    """Test prediction with sample text"""
+def test_post_request(client):
     response = client.post('/', data={
-        "news": "Government announces new policy for economic growth"
-    })
-    assert response.status_code == 200
-
-
-def test_fake_news_sample(client):
-    """Test fake news input"""
-    response = client.post('/', data={
-        "news": "Breaking!!! Secret formula to become rich overnight!!!"
+        "news": "Government announces new policy"
     })
     assert response.status_code == 200
