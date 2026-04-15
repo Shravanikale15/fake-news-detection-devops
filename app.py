@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request
 import pickle
 import requests
@@ -8,9 +7,15 @@ from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
-# Load model
-model = pickle.load(open("model/model.pkl", "rb"))
-vectorizer = pickle.load(open("model/vectorizer.pkl", "rb"))
+# ✅ Lazy loading (IMPORTANT FIX)
+model = None
+vectorizer = None
+
+def load_model():
+    global model, vectorizer
+    if model is None:
+        model = pickle.load(open("model/model.pkl", "rb"))
+        vectorizer = pickle.load(open("model/vectorizer.pkl", "rb"))
 
 API_KEY = "94a0a7928ad3491b99a6d27398e0cc47"
 
@@ -22,13 +27,12 @@ trusted_sources = [
     "ndtv.com", "apnews.com"
 ]
 
-# 🔥 Hybrid extraction
+
 def extract_from_url(url):
     try:
         article = Article(url)
         article.download()
         article.parse()
-
         if article.text and len(article.text) > 200:
             return article.title, article.text
     except:
@@ -37,7 +41,6 @@ def extract_from_url(url):
     try:
         headers = {"User-Agent": "Mozilla/5.0"}
         response = requests.get(url, headers=headers, timeout=10)
-
         soup = BeautifulSoup(response.text, "html.parser")
 
         paragraphs = soup.find_all("p")
@@ -58,21 +61,17 @@ def extract_from_url(url):
     return None, None
 
 
-# Source check
 def check_source(url):
     try:
         domain = urlparse(url).netloc.lower()
-
         for trusted in trusted_sources:
             if trusted in domain:
                 return "Trusted Source", "green"
-
         return "Suspicious Source", "red"
     except:
         return "Unknown Source", "yellow"
 
 
-# Live news verification
 def check_live_news(query):
     url = f"https://newsapi.org/v2/everything?q={query}&apiKey={API_KEY}"
     response = requests.get(url).json()
@@ -99,15 +98,16 @@ def home():
 
         if url:
             source_status, source_color = check_source(url)
-
             title, extracted_text = extract_from_url(url)
 
             if extracted_text:
                 text = extracted_text
             else:
-                error = "⚠ Could not extract article (try another link)"
+                error = "⚠ Could not extract article"
 
         if text:
+            load_model()  # ✅ IMPORTANT
+
             transformed = vectorizer.transform([text])
             result = model.predict(transformed)[0]
             prob = model.predict_proba(transformed)[0].max()
@@ -115,10 +115,8 @@ def home():
             ml_prediction = "Fake News" if result == 0 else "Real News"
             confidence = round(prob * 100, 2)
 
-            # 🔥 Live verification
             is_real, articles = check_live_news(text[:120])
 
-            # 🔥 FINAL DECISION LOGIC
             if is_real:
                 prediction = "Real News (Verified by Live Sources)"
             else:
@@ -142,3 +140,5 @@ def home():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
