@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
-# ✅ Lazy loading (IMPORTANT FIX)
+#  Lazy loading (IMPORTANT FIX)
 model = None
 vectorizer = None
 
@@ -20,7 +20,7 @@ def load_model():
 API_KEY = "94a0a7928ad3491b99a6d27398e0cc47"
 
 history = []
-
+#trusted news channel
 trusted_sources = [
     "bbc.com", "cnn.com", "reuters.com",
     "theguardian.com", "nytimes.com",
@@ -81,7 +81,7 @@ def check_live_news(query):
 
     return False, []
 
-
+#http methods
 @app.route("/", methods=["GET", "POST"])
 def home():
     prediction = None
@@ -106,7 +106,7 @@ def home():
                 error = "⚠ Could not extract article"
 
         if text:
-            load_model()  # ✅ IMPORTANT
+            load_model()  # ✅ IMPORTANT...
 
             transformed = vectorizer.transform([text])
             result = model.predict(transformed)[0]
