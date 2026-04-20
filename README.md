@@ -2,7 +2,8 @@
 
 UI updated by Sakshi
 # 📰 Fake News Detection System (TruthLens AI)
-
+## 👥 Contributors
+- Sakshi – UI Improvements
 ---
 
 ## 📌 Problem Statement
